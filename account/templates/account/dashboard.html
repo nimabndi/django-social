@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ user.username }} Profile{% endblock %}
+
+{% block js_files %}
+    <script src="{% static 'account/js/script.js' %}">
+
+    </script>
+{% endblock %}
+
+{% block content %}
+    {% if self_dash %}
+        <a href="{% url 'posts:add_post' request.user.id %}">Add post</a>
+        <a href="{% url 'account:edit_profile' request.user.id %}">Edit profile</a>
+        <a href="{% url 'account:change_password' request.user.id %}">Change password</a>
+    {% endif %}
+    <h4 class="text-center">{{ user.username|capfirst }}</h4>
+    <p class="text-center">{{ user.profile.bio }}</p>
+    {% if request.user.id != user.id and not is_following %}
+        <button id="following_btn" data-id="{{ user.id }}" style="display: block"
+                class="btn btn-primary text-center mx-auto">follow</button>
+    {% elif request.user.id != user.id and is_following %}
+        <button id="following_btn" data-id="{{ user.id }}" style="display: block"
+                class="btn btn-warning text-center mx-auto">unfollow</button>
+
+    {% endif %}
+
+    <a href="{% url 'account:user_follower' user.id %}">Followers</a>
+    <a href="{% url 'account:user_following' user.id %}">Followings</a>
+
+{#    {% for follow in user.following.all %}#}
+{#    <p>follower: {{ follow.from_user }}</p>#}
+{#    {% endfor %}#}
+    <br><br><br>
+
+    {% for post in posts %}
+        <div class="card">
+            <p class="card-body"><a href="{{ post.get_absolut_url }}">{{ post.body }}</a></p>
+        </div>
+    {% empty %}
+        This user has no posts
+    {% endfor %}
+{% endblock %}

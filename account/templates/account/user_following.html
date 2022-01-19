@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+
+{% block content%}
+    {% for following in followings %}
+        <a href="{% url 'account:dashboard' following.to_user.id %}"><p>{{ following.to_user }}</p></a>
+    {% endfor %}
+{% endblock %}

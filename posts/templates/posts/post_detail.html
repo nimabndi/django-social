@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block js_files %}
+    <script src="{% static 'posts/js/script1.js' %}">
+
+    </script>
+{% endblock %}
+
+{% block content %}
+    {% if request.user.is_authenticated and request.user.id == post.user.id %}
+        <a href="{% url 'posts:post_delete' post.user.id post.id %}">delete post</a>
+        <a href="{% url 'posts:post_edit' post.user.id post.id %}">Edit post</a>
+    {% endif %}
+    <p>{{ post.user }} | {{ post.created|date }} </p>
+    <p>{{ post.body|linebreaks }}</p>
+    <hr/>
+
+    {% with total=comments.count %}
+        <p>This post has {{ total }} comment{{ total|pluralize }}</p>
+    {% endwith %}
+
+    {% if request.user.is_authenticated %}
+        {% if can_like == False %}
+            <button id="like_dislike_btn" data-id="{{ post.id }}" class="btn btn-primary col-md-2 ">Like</button>
+        {% else %}
+            <button id="like_dislike_btn" data-id="{{ post.id }}" class="btn btn-primary col-md-2 ">DisLike</button>
+
+        {% endif %}
+    {% endif %}
+
+    <br><br>
+    {% if request.user.is_authenticated %}
+        <h3>Please leave a comment</h3>
+        <form action="" method="post" novalidate class='col-md-6'>
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="Send" class="btn btn-primary">
+        </form>
+    {% else %}
+        <p>only logged in users can send comments</p>
+    {% endif %}<br><br>
+    <h3>Comments</h3>
+    {% for comment in comments %}
+        <div class="card bg-dark text-white">
+            <p class="card-header">{{ comment.user }}</p>
+            <p class="card-body">{{ comment.body }}</p>
+            <div class="card-body">
+                {% if request.user.is_authenticated %}
+                    <form action="{% url 'posts:add_reply' post.id comment.id %}" method="post">
+                    {% csrf_token %}
+                    {{ reply.as_p }}
+                    <input type="submit" value="Reply">
+                {% else %}
+                    <p>only logged in users can send comments</p>
+                {% endif %}
+                </form>
+            </div>
+            {% for reply in comment.rcomment.all %}
+                {% if reply.active == True %}
+                <p class="bg-primary text-white p-3 m-5">{{ reply.user }}<br> {{ reply.body }}</p>
+                {% endif %}
+            {% endfor %}
+        </div><br>
+    {% empty %}
+        <p  class="card bg-dark text-white">There is no comment</p>
+    {% endfor %}
+{% endblock %}
